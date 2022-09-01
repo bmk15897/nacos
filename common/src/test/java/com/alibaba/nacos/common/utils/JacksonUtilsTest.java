@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -91,21 +92,29 @@ public class JacksonUtilsTest {
                 "[{\"key\":\"value\"}]".getBytes(),
                 JacksonUtils.toJsonBytes(Collections.singletonList(Collections.singletonMap("key", "value")))
         );
-        Assert.assertArrayEquals(
-                "{\"aLong\":0,\"aInteger\":1,\"aBoolean\":false}".getBytes(),
-                JacksonUtils.toJsonBytes(new TestOfAtomicObject())
-        );
+        byte[] expectedAtomicObject = "{\"aLong\":0,\"aInteger\":1,\"aBoolean\":false}".getBytes();
+        Arrays.sort(expectedAtomicObject); //sorting the byte array
+
+        byte[] actualAtomicObject = JacksonUtils.toJsonBytes(new TestOfAtomicObject());
+        Arrays.sort(actualAtomicObject); //sorting the byte array
+
+        Assert.assertArrayEquals(expectedAtomicObject, actualAtomicObject);
+
         Assert.assertArrayEquals("{\"date\":1626192000000}".getBytes(), JacksonUtils.toJsonBytes(new TestOfDate()));
         // only public
         Assert.assertArrayEquals(
                 "{\"publicAccessModifier\":\"public\"}".getBytes(),
                 JacksonUtils.toJsonBytes(new TestOfAccessModifier())
         );
+
+        byte[] expectedTestOfGetter = "{\"value\":\"value\",\"key\":\"key\"}".getBytes();
+        Arrays.sort(expectedTestOfGetter); //sorting the byte array
+
+        byte[] actualTestOfGetter = JacksonUtils.toJsonBytes(new TestOfGetter());
+        Arrays.sort(actualTestOfGetter); //sorting the byte array
+
         // getter is also recognized
-        Assert.assertArrayEquals(
-                "{\"value\":\"value\",\"key\":\"key\"}".getBytes(),
-                JacksonUtils.toJsonBytes(new TestOfGetter())
-        );
+        Assert.assertArrayEquals(expectedTestOfGetter, actualTestOfGetter);
         // annotation available
         Assert.assertArrayEquals(
                 ("{\"@type\":\"JacksonUtilsTest$TestOfAnnotationSub\",\"date\":\"2021-07-14\",\"subField\":\"subField\"," 
