@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
@@ -39,7 +40,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -92,13 +92,8 @@ public class JacksonUtilsTest {
                 "[{\"key\":\"value\"}]".getBytes(),
                 JacksonUtils.toJsonBytes(Collections.singletonList(Collections.singletonMap("key", "value")))
         );
-        byte[] expectedAtomicObject = "{\"aLong\":0,\"aInteger\":1,\"aBoolean\":false}".getBytes();
-        Arrays.sort(expectedAtomicObject); //sorting the byte array
 
-        byte[] actualAtomicObject = JacksonUtils.toJsonBytes(new TestOfAtomicObject());
-        Arrays.sort(actualAtomicObject); //sorting the byte array
-
-        Assert.assertArrayEquals(expectedAtomicObject, actualAtomicObject);
+        Assert.assertArrayEquals("{\"aBoolean\":false,\"aInteger\":1,\"aLong\":0}".getBytes(), JacksonUtils.toJsonBytes(new TestOfAtomicObject()));
 
         Assert.assertArrayEquals("{\"date\":1626192000000}".getBytes(), JacksonUtils.toJsonBytes(new TestOfDate()));
         // only public
@@ -107,14 +102,8 @@ public class JacksonUtilsTest {
                 JacksonUtils.toJsonBytes(new TestOfAccessModifier())
         );
 
-        byte[] expectedTestOfGetter = "{\"value\":\"value\",\"key\":\"key\"}".getBytes();
-        Arrays.sort(expectedTestOfGetter); //sorting the byte array
-
-        byte[] actualTestOfGetter = JacksonUtils.toJsonBytes(new TestOfGetter());
-        Arrays.sort(actualTestOfGetter); //sorting the byte array
-
         // getter is also recognized
-        Assert.assertArrayEquals(expectedTestOfGetter, actualTestOfGetter);
+        Assert.assertArrayEquals("{\"key\":\"key\",\"value\":\"value\"}".getBytes(), JacksonUtils.toJsonBytes(new TestOfGetter()));
         // annotation available
         Assert.assertArrayEquals(
                 ("{\"@type\":\"JacksonUtilsTest$TestOfAnnotationSub\",\"date\":\"2021-07-14\",\"subField\":\"subField\"," 
@@ -482,7 +471,8 @@ public class JacksonUtilsTest {
         Assert.assertEquals("你好，中国！", restResult.getData().get("string"));
         Assert.assertEquals(999, restResult.getData().get("integer"));
     }
-    
+
+    @JsonPropertyOrder(alphabetic = true)
     static class TestOfAtomicObject {
         
         public AtomicLong aLong = new AtomicLong(0);
@@ -566,7 +556,8 @@ public class JacksonUtilsTest {
             return result;
         }
     }
-    
+
+    @JsonPropertyOrder(alphabetic = true)
     static class TestOfGetter {
         
         public String getKey() {
