@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
@@ -91,21 +92,18 @@ public class JacksonUtilsTest {
                 "[{\"key\":\"value\"}]".getBytes(),
                 JacksonUtils.toJsonBytes(Collections.singletonList(Collections.singletonMap("key", "value")))
         );
-        Assert.assertArrayEquals(
-                "{\"aLong\":0,\"aInteger\":1,\"aBoolean\":false}".getBytes(),
-                JacksonUtils.toJsonBytes(new TestOfAtomicObject())
-        );
+
+        Assert.assertArrayEquals("{\"aBoolean\":false,\"aInteger\":1,\"aLong\":0}".getBytes(), JacksonUtils.toJsonBytes(new TestOfAtomicObject()));
+
         Assert.assertArrayEquals("{\"date\":1626192000000}".getBytes(), JacksonUtils.toJsonBytes(new TestOfDate()));
         // only public
         Assert.assertArrayEquals(
                 "{\"publicAccessModifier\":\"public\"}".getBytes(),
                 JacksonUtils.toJsonBytes(new TestOfAccessModifier())
         );
+
         // getter is also recognized
-        Assert.assertArrayEquals(
-                "{\"value\":\"value\",\"key\":\"key\"}".getBytes(),
-                JacksonUtils.toJsonBytes(new TestOfGetter())
-        );
+        Assert.assertArrayEquals("{\"key\":\"key\",\"value\":\"value\"}".getBytes(), JacksonUtils.toJsonBytes(new TestOfGetter()));
         // annotation available
         Assert.assertArrayEquals(
                 ("{\"@type\":\"JacksonUtilsTest$TestOfAnnotationSub\",\"date\":\"2021-07-14\",\"subField\":\"subField\"," 
@@ -473,7 +471,8 @@ public class JacksonUtilsTest {
         Assert.assertEquals("你好，中国！", restResult.getData().get("string"));
         Assert.assertEquals(999, restResult.getData().get("integer"));
     }
-    
+
+    @JsonPropertyOrder(alphabetic = true)
     static class TestOfAtomicObject {
         
         public AtomicLong aLong = new AtomicLong(0);
@@ -557,7 +556,8 @@ public class JacksonUtilsTest {
             return result;
         }
     }
-    
+
+    @JsonPropertyOrder(alphabetic = true)
     static class TestOfGetter {
         
         public String getKey() {
